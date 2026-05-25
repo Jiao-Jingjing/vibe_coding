@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- iOS 移动端适配 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="表白">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❤️</text></svg>">
+    <title>❤️ 给你的表白</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --pink: #ff4d6d;
+            --pink-light: #ff8fa3;
+            --gold: #ffd166;
+            --white: #fff5f7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', 'STHeiti', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* ========== 星星背景 ========== */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--dur) ease-in-out infinite;
+            animation-delay: var(--delay);
+            opacity: 0;
+        }
+        @keyframes twinkle {
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.8);
+            }
+        }
+
+        /* ========== 飘落花瓣/爱心 ========== */
+        .falling-petals {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .petal {
+            position: absolute;
+            top: -60px;
+            animation: fall var(--fall-dur) linear infinite;
+            animation-delay: var(--fall-delay);
+            font-size: var(--size);
+            opacity: 0.8;
+            filter: blur(0.5px);
+        }
+        @keyframes fall {
+            0% {
+                transform: translateY(-60px) rotate(0deg) translateX(0px);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.9;
+            }
+            60% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.15;
+            }
+            100% {
+                transform: translateY(105vh) rotate(var(--rotate)) translateX(var(--drift));
+                opacity: 0;
+            }
+        }
+
+        /* ========== 主卡片 ========== */
+        .main-card {
+            position: relative;
+            z-index: 10;
+            background: rgba(20, 20, 35, 0.75);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 28px;
+            padding: 35px 28px 30px;
+            width: 88vw;
+            max-width: 380px;
+            text-align: center;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                0 0 80px rgba(255, 77, 109, 0.15);
+            animation: cardFloat 4s ease-in-out infinite;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+        }
+        .main-card.expanded {
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+                0 0 120px rgba(255, 77, 109, 0.35),
+                0 0 200px rgba(255, 140, 160, 0.2);
+        }
+        @keyframes cardFloat {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* ========== 顶部装饰线 ========== */
+        .decorative-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+        .decorative-line span {
+            display: block;
+            width: 30px;
+            height: 1px;
+            background: var(--pink-light);
+            border-radius: 1px;
+        }
+        .decorative-line .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--pink);
+            box-shadow: 0 0 10px var(--pink);
+        }
+
+        /* ========== 心跳爱心 ========== */
+        .heart-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0 16px;
+            position: relative;
+        }
+        .heart-beat {
+            font-size: 70px;
+            animation: heartBeat 1s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(255, 77, 109, 0.6));
+            cursor: pointer;
+            transition: transform 0.15s ease;
+            display: inline-block;
+            line-height: 1;
+        }
+        .heart-beat:active {
+            transform: scale(1.2);
+            animation-duration: 0.4s;
+        }
+        @keyframes heartBeat {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            14% {
+                transform: scale(1.28);
+            }
+            28% {
+                transform: scale(1);
+            }
+            42% {
+                transform: scale(1.28);
+            }
+            56% {
+                transform: scale(1);
+            }
+        }
+
+        /* 爱心光晕 */
+        .heart-glow {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 77, 109, 0.4) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: glowPulse 1.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes glowPulse {
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.6);
+                opacity: 0.15;
+            }
+        }
+
+        /* ========== 标题 ========== */
+        .title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+            text-shadow: 0 0 30px rgba(255, 77, 109, 0.5);
+        }
+        .subtitle {
+            font-size: 13px;
+            color: rgba(255, 245, 247, 0.6);
+            letter-spacing: 3px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        /* ========== 表白文字 ========== */
+        .message-area {
+            position: relative;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 8px 0 20px;
+            transition: all 0.4s ease;
+        }
+        .message {
+            font-size: 17px;
+            color: rgba(255, 245, 247, 0.85);
+            line-height: 1.7;
+            letter-spacing: 1.5px;
+            transition: all 0.5s ease;
+            padding: 0 5px;
+        }
+        .message.revealed {
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 140, 160, 0.5);
+            font-size: 18px;
+        }
+
+        /* ========== 按钮 ========== */
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 13px 26px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #ff4d6d, #ff6b81);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(255, 77, 109, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-primary:active {
+            transform: scale(0.94);
+            box-shadow: 0 4px 15px rgba(255, 77, 109, 0.6);
+            background: linear-gradient(135deg, #ff3358, #ff5570);
+        }
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 245, 247, 0.8);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .btn-ghost:active {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: scale(0.94);
+        }
+
+        /* ========== 回应区域 ========== */
+        .response-area {
+            margin-top: 18px;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1.2);
+            pointer-events: none;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .response-area.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            max-height: 200px;
+        }
+        .response-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 2px;
+            text-shadow: 0 0 25px rgba(255, 209, 102, 0.6);
+            animation: shimmer 2s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0%,
+            100% {
+                opacity: 0.85;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        .response-emoji {
+            font-size: 50px;
+            display: block;
+            margin-bottom: 6px;
+            animation: bounceEmoji 0.7s ease-in-out infinite alternate;
+        }
+        @keyframes bounceEmoji {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-14px);
+            }
+        }
+
+        /* ========== Toast ========== */
+        .toast {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: rgba(255, 77, 109, 0.9);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            z-index: 100;
+            pointer-events: none;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(255, 77, 109, 0.5);
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ========== 粒子爆炸 ========== */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 50;
+            font-size: 24px;
+            animation: particleBurst 0.9s ease-out forwards;
+        }
+        @keyframes particleBurst {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            70% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translate(var(--px), var(--py)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* ========== 音乐播放按钮 ========== */
+        .music-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 30;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .music-toggle:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.9);
+        }
+        .music-toggle.playing {
+            border-color: var(--pink);
+            box-shadow: 0 0 20px rgba(255, 77, 109, 0.4);
+            animation: musicGlow 1.5s ease-in-out infinite;
+        }
+        @keyframes musicGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(255, 77, 109, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(255, 77, 109, 0.7);
+            }
+        }
+
+        /* iOS 安全区域适配 */
+        @supports(padding: max(0px)) {
+            .music-toggle {
+                top: max(20px, env(safe-area-inset-top) + 10px);
+                right: max(20px, env(safe-area-inset-right) + 10px);
+            }
+            .toast {
+                top: max(60px, env(safe-area-inset-top) + 50px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 星星背景 -->
+    <div class="stars-container" id="starsContainer"></div>
+
+    <!-- 飘落花瓣 -->
+    <div class="falling-petals" id="petalsContainer"></div>
+
+    <!-- 音乐按钮 -->
+    <button class="music-toggle" id="musicToggle" title="播放音乐" aria-label="音乐开关">🎵</button>
+
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 主卡片 -->
+    <div class="main-card" id="mainCard">
+        <!-- 装饰线 -->
+        <div class="decorative-line">
+            <span></span><span class="dot"></span><span></span>
+            <span style="font-size:10px;color:var(--pink-light);">✦</span>
+            <span></span><span class="dot"></span><span></span>
+        </div>
+
+        <!-- 标题 -->
+        <div class="title">写给你</div>
+        <div class="subtitle">· For You ·</div>
+
+        <!-- 心跳爱心 -->
+        <div class="heart-wrapper" id="heartWrapper">
+            <div class="heart-glow"></div>
+            <span class="heart-beat" id="heartBeat">❤️</span>
+        </div>
+
+        <!-- 表白文字 -->
+        <div class="message-area">
+            <p class="message" id="message">遇见你<br>是我最美丽的意外</p>
+        </div>
+
+        <!-- 按钮 -->
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btnReveal">
+                💌 点我看看
+            </button>
+            <button class="btn btn-ghost" id="btnSurprise">
+                ✨ 惊喜
+            </button>
+        </div>
+
+        <!-- 回应区域 -->
+        <div class="response-area" id="responseArea">
+            <span class="response-emoji">💕</span>
+            <p class="response-text">我也喜欢你！</p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ============ DOM元素 ============
+            const starsContainer = document.getElementById('starsContainer');
+            const petalsContainer = document.getElementById('petalsContainer');
+            const mainCard = document.getElementById('mainCard');
+            const heartBeat = document.getElementById('heartBeat');
+            const heartWrapper = document.getElementById('heartWrapper');
+            const messageEl = document.getElementById('message');
+            const btnReveal = document.getElementById('btnReveal');
+            const btnSurprise = document.getElementById('btnSurprise');
+            const responseArea = document.getElementById('responseArea');
+            const toast = document.getElementById('toast');
+            const musicToggle = document.getElementById('musicToggle');
+
+            // ============ 状态 ============
+            let isRevealed = false;
+            let isMusicPlaying = false;
+            let heartTapCount = 0;
+            const messages = [
+                '遇见你<br>是我最美丽的意外',
+                '你一笑<br>我的世界都亮了',
+                '想和你一起<br>看遍世间所有日落',
+                '在所有人事已非的景色里<br>我最喜欢你',
+                '你是我<br>藏在心底最深的温柔',
+                '如果可以<br>我想成为你的余生',
+                '春风十里<br>不如你',
+            ];
+            let currentMsgIndex = 0;
+
+            // ============ 创建星星 ============
+            function createStars() {
+                const count = 80;
+                const fragment = document.createDocumentFragment();
+                for (let i = 0; i < count; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    const size = Math.random() * 2.5 + 1;
+                    star.style.width = size + 'px';
+                    star.style.height = size + 'px';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    star.style.setProperty('--dur', (Math.random() * 3 + 2) + 's');
+                    star.style.setProperty('--delay', (Math.random() * 5) + 's');
+                    fragment.appendChild(star);
+                }
+                starsContainer.appendChild(fragment);
+            }
+
+            // ============ 创建飘落花瓣/爱心 ============
+            function createPetals() {
+                const emojis = ['🌸', '💮', '🌷', '🩷', '✨', '💖', '🕊️', '🌹', '💗', '🍃'];
+                const count = 25;
+                const fragment = document.createDocumentFragment();
+                for (let i = 0; i < count; i++) {
+                    const petal = document.createElement('span');
+                    petal.classList.add('petal');
+                    petal.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    petal.style.left = Math.random() * 95 + '%';
+                    petal.style.setProperty('--size', (Math.random() * 16 + 12) + 'px');
+                    petal.style.setProperty('--fall-dur', (Math.random() * 8 + 8) + 's');
+                    petal.style.setProperty('--fall-delay', (Math.random() * 10) + 's');
+                    petal.style.setProperty('--rotate', (Math.random() * 720 - 360) + 'deg');
+                    petal.style.setProperty('--drift', (Math.random() * 120 - 60) + 'px');
+                    fragment.appendChild(petal);
+                }
+                petalsContainer.appendChild(fragment);
+            }
+
+            // ============ Toast ============
+            let toastTimer;
+            function showToast(text) {
+                toast.textContent = text;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 1800);
+            }
+
+            // ============ 粒子爆炸效果 ============
+            function spawnParticles(x, y, emoji) {
+                const count = 14;
+                for (let i = 0; i < count; i++) {
+                    const particle = document.createElement('span');
+                    particle.classList.add('particle');
+                    particle.textContent = emoji || '💕';
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    const angle = (Math.PI * 2 / count) * i + Math.random() * 0.4;
+                    const distance = Math.random() * 100 + 50;
+                    particle.style.setProperty('--px', Math.cos(angle) * distance + 'px');
+                    particle.style.setProperty('--py', Math.sin(angle) * distance + 'px');
+                    document.body.appendChild(particle);
+                    // 动画结束后移除
+                    particle.addEventListener('animationend', () => {
+                        particle.remove();
+                    });
+                }
+            }
+
+            // ============ 点击爱心 ============
+            heartWrapper.addEventListener('click', function(e) {
+                heartTapCount++;
+                // 粒子爆炸
+                const rect = heartBeat.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                spawnParticles(cx, cy, '❤️');
+
+                // 爱心抖动反馈
+                heartBeat.style.animation = 'none';
+                heartBeat.offsetHeight; // 强制回流
+                heartBeat.style.animation = 'heartBeat 0.5s ease-in-out';
+                setTimeout(() => {
+                    heartBeat.style.animation = 'heartBeat 1s ease-in-out infinite';
+                }, 500);
+
+                // 每点3次换一句话
+                if (heartTapCount % 3 === 0) {
+                    currentMsgIndex = (currentMsgIndex + 1) % messages.length;
+                    messageEl.innerHTML = messages[currentMsgIndex];
+                    messageEl.classList.add('revealed');
+                    setTimeout(() => messageEl.classList.remove('revealed'), 1500);
+                    showToast('💌 换一句情话给你~');
+                } else if (heartTapCount === 1) {
+                    showToast('❤️ 再点几下试试~');
+                }
+            });
+
+            // ============ 按钮：点我看看 ============
+            btnReveal.addEventListener('click', function(e) {
+                if (!isRevealed) {
+                    // 第一次点击：展示深情表白
+                    isRevealed = true;
+                    messageEl.innerHTML = '从第一次见到你<br>我的心就悄悄告诉我<br><strong>就是你了</strong> 💫';
+                    messageEl.classList.add('revealed');
+                    mainCard.classList.add('expanded');
+                    btnReveal.textContent = '💝 再点一次';
+                    showToast('💗 有句话想对你说...');
+
+                    // 爱心加速
+                    heartBeat.style.animation = 'heartBeat 0.5s ease-in-out infinite';
+                    setTimeout(() => {
+                        heartBeat.style.animation = 'heartBeat 1s ease-in-out infinite';
+                    }, 2000);
+
+                    // 粒子
+                    const rect = btnReveal.getBoundingClientRect();
+                    spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, '💌');
+                } else {
+                    // 第二次点击：显示回应
+                    responseArea.classList.add('show');
+                    mainCard.classList.add('expanded');
+                    btnReveal.textContent = '💖 我也喜欢你';
+                    btnReveal.style.background = 'linear-gradient(135deg, #ff6b81, #ff8fa3)';
+                    showToast('🥰 好开心！');
+
+                    // 大量粒子
+                    const rect = btnReveal.getBoundingClientRect();
+                    spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, '🎉');
+                    setTimeout(() => {
+                        const rect2 = responseArea.getBoundingClientRect();
+                        spawnParticles(rect2.left + rect2.width / 2, rect2.top + rect2.height / 2, '💕');
+                    }, 300);
+
+                    // 爱心狂跳
+                    heartBeat.style.animation = 'heartBeat 0.3s ease-in-out infinite';
+                    setTimeout(() => {
+                        heartBeat.style.animation = 'heartBeat 0.8s ease-in-out infinite';
+                    }, 2500);
+                }
+            });
+
+            // ============ 按钮：惊喜 ============
+            btnSurprise.addEventListener('click', function(e) {
+                // 切换不同的惊喜效果
+                const surprises = [
+                    { msg: '你是我见过<br>最<strong>温柔</strong>的人 🌙', emoji: '🌙' },
+                    { msg: '每次和你聊天<br>我都舍不得说晚安 💤', emoji: '💤' },
+                    { msg: '你的名字<br>是我听过最短的情诗 📝', emoji: '📝' },
+                    { msg: '世界很大<br>但我的眼里只有你 👀', emoji: '👀' },
+                    { msg: '如果可以给喜欢加个期限<br>我希望是<strong>一万年</strong> ⏳', emoji: '⏳' },
+                ];
+                const surprise = surprises[Math.floor(Math.random() * surprises.length)];
+                messageEl.innerHTML = surprise.msg;
+                messageEl.classList.add('revealed');
+                mainCard.classList.add('expanded');
+                setTimeout(() => {
+                    messageEl.classList.remove('revealed');
+                    mainCard.classList.remove('expanded');
+                }, 2000);
+
+                const rect = btnSurprise.getBoundingClientRect();
+                spawnParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, surprise.emoji);
+                showToast('✨ ' + surprise.emoji + ' 惊喜！');
+            });
+
+            // ============ 音乐按钮（模拟） ============
+            // 由于移动端自动播放限制，这里用视觉反馈模拟
+            musicToggle.addEventListener('click', function() {
+                isMusicPlaying = !isMusicPlaying;
+                if (isMusicPlaying) {
+                    musicToggle.classList.add('playing');
+                    musicToggle.textContent = '🎶';
+                    showToast('🎵 浪漫氛围已开启~');
+                    // 让爱心随音乐节奏跳动
+                    heartBeat.style.animation = 'heartBeat 0.7s ease-in-out infinite';
+                } else {
+                    musicToggle.classList.remove('playing');
+                    musicToggle.textContent = '🎵';
+                    heartBeat.style.animation = 'heartBeat 1s ease-in-out infinite';
+                    showToast('🔇 音乐已暂停');
+                }
+            });
+
+            // ============ 长按卡片重置 ============
+            let longPressTimer;
+            mainCard.addEventListener('touchstart', function(e) {
+                longPressTimer = setTimeout(() => {
+                    // 重置所有状态
+                    isRevealed = false;
+                    heartTapCount = 0;
+                    currentMsgIndex = 0;
+                    messageEl.innerHTML = messages[0];
+                    messageEl.classList.remove('revealed');
+                    responseArea.classList.remove('show');
+                    mainCard.classList.remove('expanded');
+                    btnReveal.textContent = '💌 点我看看';
+                    btnReveal.style.background = 'linear-gradient(135deg, #ff4d6d, #ff6b81)';
+                    heartBeat.style.animation = 'heartBeat 1s ease-in-out infinite';
+                    showToast('🔄 已重置~');
+                }, 1500);
+            });
+            mainCard.addEventListener('touchend', function() {
+                clearTimeout(longPressTimer);
+            });
+            mainCard.addEventListener('touchmove', function() {
+                clearTimeout(longPressTimer);
+            });
+
+            // ============ 初始化 ============
+            function init() {
+                createStars();
+                createPetals();
+                // 初始加载微动画
+                setTimeout(() => {
+                    messageEl.classList.add('revealed');
+                    setTimeout(() => messageEl.classList.remove('revealed'), 1800);
+                }, 600);
+            }
+
+            // ============ iOS Safari 橡皮筋效果优化 ============
+            document.body.addEventListener('touchmove', function(e) {
+                // 允许卡片区域滚动（如果有的话），但防止整体页面弹跳
+                if (!e.target.closest('.main-card')) {
+                    // 不阻止，让body处理
+                }
+            }, { passive: true });
+
+            // 防止双击缩放
+            document.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+
+            init();
+            console.log('💕 表白小程序已就绪 - 愿你喜欢这份心意~');
+            console.log('💡 提示：点击爱心有惊喜 | 长按卡片可重置 | 右上角可切换音乐模式');
+        })();
+    </script>
+</body>
+</html>
